@@ -17,3 +17,13 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // ✅ Public User Registration Routes
 Route::get('/register-user', [PublicUserController::class, 'showForm'])->name('register.form');
 Route::post('/register-user', [PublicUserController::class, 'register'])->name('register.store');
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
