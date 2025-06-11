@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('progress', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('C_ID')
+                  ->constrained('complaint')->onDelete('cascade');
+            $table->foreignId('A_ID')
+                  ->constrained('agency')->onDelete('cascade');
+            $table->string('P_Status');
+            $table->text('P_Notes');
+            $table->time('P_Timestamp');
             $table->timestamps();
         });
     }

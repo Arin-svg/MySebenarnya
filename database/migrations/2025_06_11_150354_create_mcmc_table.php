@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('mcmc', function (Blueprint $table) {
             $table->id();
+            $table->string('M_Name');
+            $table->string('M_UserName')->unique();
+            $table->string('M_Password');
+            $table->string('M_Email')->unique;
+            $table->string('M_Addresss');
+            $table->string('M_PhoneNum');
+            $table->string('M_Gender');
+            $table->string('M_ProfilePicture');
+            $table->string('M_UserName');
             $table->timestamps();
         });
     }
