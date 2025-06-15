@@ -4,39 +4,45 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PublicUser;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PublicUserController extends Controller
 {
+    // Show registration form
     public function showForm()
     {
-        return view('Registration.register_user');
+        return view('Registration.PublicUserRegistration'); // make sure your blade file is in resources/views/Registration/
     }
 
+    // Handle registration form submission
     public function register(Request $request)
     {
-        $request->validate([
-            'PU_Name' => 'required|string',
-            'PU_IC' => 'required|digits:12',
-            'PU_Age' => 'required|integer|min:1',
+        $validator = Validator::make($request->all(), [
+            'PU_Name' => 'required|string|max:255',
+            'PU_IC' => 'required|numeric|unique:publicuser,PU_IC',
+            'PU_Age' => 'required|numeric|min:1|max:120',
             'PU_Address' => 'required|string',
-            'PU_Email' => 'required|email|unique:public_users,PU_Email',
-            'PU_PhoneNum' => 'required|digits_between:10,11',
-            'PU_Gender' => 'required|in:Male,Female',
-            'PU_Password' => 'required|min:6',
+            'PU_Email' => 'required|email|unique:publicuser,PU_Email',
+            'PU_PhoneNum' => 'required|numeric',
+            'PU_Gender' => 'required|string',
+            'PU_Password' => 'required|string|min:8|max:255',
+            'PU_ProfilePicture' => 'nullable|image|max:2048'
         ]);
 
-        // Generate unique PU_ID
-        $lastUser = PublicUser::orderBy('PU_ID', 'desc')->first();
-        $nextId = 'PU00001';
-        if ($lastUser) {
-            $num = intval(substr($lastUser->PU_ID, 2)) + 1;
-            $nextId = 'PU' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        // Store to database
+        $profilePicturePath = null;
+        if ($request->hasFile('PU_ProfilePicture')) {
+            $profilePicturePath = $request->file('PU_ProfilePicture')->store('profile_pictures', 'public');
+        }
+
         PublicUser::create([
-            'PU_ID' => $nextId,
+            'PU_ID' => 'PU' . strtoupper(Str::random(5)),
             'PU_Name' => $request->PU_Name,
             'PU_IC' => $request->PU_IC,
             'PU_Age' => $request->PU_Age,
@@ -44,9 +50,10 @@ class PublicUserController extends Controller
             'PU_Email' => $request->PU_Email,
             'PU_PhoneNum' => $request->PU_PhoneNum,
             'PU_Gender' => $request->PU_Gender,
-            'PU_Password' => Hash::make($request->PU_Password),
+            'PU_Password' => $request->PU_Password,
+            'PU_ProfilePicture' => $profilePicturePath
         ]);
 
-        return redirect()->back()->with('success', "Registration successful! Your ID is: $nextId");
+        return redirect()->route('publicuser.login')->with('success', 'Registration successful! Please login.');
     }
 }

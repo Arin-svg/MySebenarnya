@@ -9,14 +9,14 @@ Route::get('/', function () {
 });
 
 // Laravel authentication routes
-Auth::routes();
+//Auth::routes();
 
 // Authenticated home page
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-// ✅ Public User Registration Routes
 Route::get('/register-user', [PublicUserController::class, 'showForm'])->name('register.form');
 Route::post('/register-user', [PublicUserController::class, 'register'])->name('register.store');
+
 
 Route::middleware([
     'auth:sanctum',
